@@ -683,6 +683,40 @@ export default class ParseStream extends Stream {
         return;
       }
 
+      match = (/^#EXT-X-I-FRAME-STREAM-INF:(.*)$/).exec(newLine);
+      if (match) {
+        event = {
+          type: 'tag',
+          tagType: 'i-frame-playlist'
+        };
+
+        event.attributes = parseAttributes(match[1]);
+
+        if (event.attributes.URI) {
+          event.uri = event.attributes.URI;
+        }
+
+        if (event.attributes.BANDWIDTH) {
+          event.attributes.BANDWIDTH = parseInt(event.attributes.BANDWIDTH, 10);
+        }
+
+        if (event.attributes.RESOLUTION) {
+          event.attributes.RESOLUTION = parseResolution(event.attributes.RESOLUTION);
+        }
+
+        if (event.attributes['AVERAGE-BANDWIDTH']) {
+          event.attributes['AVERAGE-BANDWIDTH'] = parseInt(event.attributes['AVERAGE-BANDWIDTH'], 10);
+        }
+
+        if (event.attributes['FRAME-RATE']) {
+          event.attributes['FRAME-RATE'] = parseFloat(event.attributes['FRAME-RATE']);
+        }
+
+        this.trigger('data', event);
+
+        return;
+      }
+
       // unknown tag type
       this.trigger('data', {
         type: 'tag',
